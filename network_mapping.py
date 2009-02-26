@@ -5,110 +5,148 @@ import elementtree.ElementTree as ET
 import random
 random.seed(42)
 
-class Graph():
-    def __init__(self, append, nodes_file, edges_file):
+class GraphFactory():
+    def __init__(self, nodes_file, edges_file):
+        self.n = 0
         self.nodes_file = nodes_file
-        #print ET.tostring(self.nodes.toxml())
         self.edges_file = edges_file
-        #print ET.tostring(self.edges.toxml())
-        self.append = append
-        self.edges.alter(*self.nodes.get_random_pair())
+
+    def base_graph(self):
+        g = self.graph()
+        g.load()
+        return g
+
+    def graph(self):
+        g = Graph(self.nodes_file, self.edges_file)
+        g.id = self.n
+        self.n += 1
+        g.fact = self
+        return g
+
+class Graph():
+    def __init__(self, nodes_file=None, edges_file=None ):
+        self.nodes = Nodes()
+        self.edges = Edges(self.nodes)
+        self.nodes_file = nodes_file
+        self.edges_file = edges_file
+        self.num_edges = 0
+        self.num_nodes = 0
 
     def load(self):
-        self.nodes = Nodes(nodes_file)
-        self.edges = Edges(edges_file)
-
+        self.nodes = Nodes(self.nodes_file)
+        self.edges = Edges(self.nodes, self.edges_file)
 
     def get_files(self):
         return (nodes_file, edges_file)
 
     def merge(self, other):
-        #child1 =
-        pass
+        child1 = self.fact.graph()
+        child2 = self.fact.graph()
+        child1.nodes = self.nodes
+        child2.nodes = self.nodes
+        for edge in self.edges.get_edges():
+            if other.contains_edge(edge):
+                child1.add_edge(edge)
+                child2.add_edge(edge)
+            else:
+                random.choice((child1, child2)).add_edge(edge)
+        return child1, child2
+
+    def contains_edge(self, edge):
+        return edge in self.edges.edges
+
+    def add_edge(self, edge):
+        self.edges.add(str(self.num_edges), edge)
+        self.num_edges += 1
 
     def writexml(self):
-        ET.ElementTree(self.nodes.toxml()).write(self.nodes_file + self.append)
-        ET.ElementTree(self.edges.toxml()).write(self.edges_file + self.append)
+        ET.ElementTree(self.nodes.toxml()).write(self.nodes_file + "." + str(self.id))
+        ET.ElementTree(self.edges.toxml()).write(self.edges_file + "." + str(self.id))
 
     def alter_edges(self):
         self.edges.alter(*self.nodes.get_random_pair())
 
-class Node():
-    def __init__(self, id, x, y):
-        self.id = id
-        self.x = float(x)
-        self.y = float(y)
-        print self.id, self.x, self.y
-
-    def __str__(self):
-        return 'x="%.2f" y="%.2f"' % (self.x, self.y)
-
-    def toxml(self):
-        return ET.Element("node", id=self.id, x=str(self.x), y=str(self.y))
-
 class Nodes():
-    def __init__(self, nodes):
+    def __init__(self, nodes=None):
         self.nodes = {}
+        self.mapping = {} #Map new id's to old id's.
+        self.n = 0
+        if nodes:
+            self.load(nodes)
+
+    def load(self, nodes):
         nodes = ET.parse(nodes)
         for node in nodes.getroot().getchildren():
             d = node.attrib
-            self.nodes[d["id"]] = Node(d["id"], d["x"], d["y"])
+            self.mapping[d["id"]] = str(self.n)
+            self.nodes[str(self.n)] = (d["x"], d["y"])
+            self.n += 1
+
+    def get_mapped_id(self, id):
+        return self.mapping[id]
 
     def get_random_pair(self):
-        return random.sample(self.nodes.values(), 2)
+        return random.sample(self.nodes.keys(), 2)
 
     def toxml(self):
         xmlnodes = ET.Element("nodes")
         for k, node in self.nodes.items():
-            xmlnodes.append(node.toxml())
+            xmlnodes.append(ET.Element("node", id=k, x=str(node[0]), y=str(node[1])))
         return xmlnodes
 
-
-class Edge():
-    def __init__(self, id, from_node, to_node, spread):
-        self.id = id
-        self.from_node = from_node
-        self.to_node = to_node
-        self.spread = spread
-
-    def right_nodes(self, n1, n2):
-        return (self.from_node == n1 and self.to_node == n2) or (self.from_node == n2 and self.to_node == n1)
-
-    def toxml(self):
-        return ET.Element("edge", id=self.id, fromnode=self.from_node, tonode=self.to_node, spread_type=self.spread)
-
 class Edges():
-    def __init__(self, edges):
+    def __init__(self, nodes, edges=None):
         self.edges = {}
+        self.nodes = nodes
+        self.n = 0
+        if edges:
+            self.load(edges)
+
+    def load(self, edges):
         edges = ET.parse(edges)
+        print len(edges.getroot().getchildren())
         for edge in edges.getroot().getchildren():
             d = edge.attrib
-            self.edges[d["id"]] = Edge(d["id"], d["fromnode"], d["tonode"], d["spread_type"])
+            self.add(self.nodes.get_mapped_id(d["fromnode"]), self.nodes.get_mapped_id(d["tonode"]),  d["spread_type"])
+
+    def add(self, n1, n2, spread):
+        key = frozenset((n1, n2))
+        self.edges[key] = (str(self.n), spread)
+        self.n += 1
 
     def alter(self, n1, n2):
         """
         remove the edge is it is found, otherwise make a new one.
         """
-        for edge in self.edges.values():
-            if edge.right_nodes(n1.id, n2.id):
-                del self.edges[edge.id]
-                return
-        id = str(len(self.edges))
-        self.edges[id] = Edge(id, n1.id, n2.id, "center")
+        if self.contains(n1, n2):
+            del self.edges[edge.id]
+        else:
+            self.add(n1, n2, "center")
 
-    def contains(self, edge):
-        for e in self.edges.valuse():
-            if e.right_nodes(e.from_node, e.to_node):
-                return True
-        return False
+    def contains(self, n1, n2):
+        return frozenset((n1, n2)) in self.edges
 
     def toxml(self):
         xmledges = ET.Element("edges")
+        print len(self.edges)
         for k, edge in self.edges.items():
-            xmledges.append(edge.toxml())
+            k = tuple(k)
+            xmledges.append(ET.Element("edge", id=edge[0], fromnode=k[0], tonode=k[1], spread_type=edge[1]))
         return xmledges
     
 if __name__=="__main__": 
-    g = Graph("out", "hokkaido-japan/hokkaido.nod.xml", "hokkaido-japan/hokkaido.edg.xml")
-    g.load()
-    g.writexml()
+    fact = GraphFactory("hokkaido-japan/hokkaido.nod.xml", "hokkaido-japan/hokkaido.edg.xml")
+    g = [fact.base_graph(), fact.base_graph()]
+    for d in g:
+        d.writexml()
+    #count = 0
+    #while len(g) < 100:
+        #print count
+        #children = []
+        #for n in g:
+            #n.alter_edges()
+        #for n in g:
+            #children.extend(n.merge(random.choice(g)))
+        #g.extend(children)
+        #count += 1
+    
