@@ -4,7 +4,7 @@ import math
 def euclid_dist(a, b):
     return sum(abs(n-m) for n,m in zip(a,b))
 
-class moea_pop():
+class Population():
     def __init__(self, popsize, genome):
         self.popsize = popsize
         self.genome = genome
@@ -77,7 +77,7 @@ class moea_pop():
     def clear(self):
         pass
 
-class moea_indiv():
+class Individual():
     """
     The genome representation
     """
@@ -137,7 +137,7 @@ class moea_indiv():
     
 
 
-class eps_moea():
+class epsilonMOEA():
     def __init__(self, pop_base):
         pass
     """

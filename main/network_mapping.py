@@ -1,5 +1,21 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""
+    This file is part of Evolutionary algorithm network design.
+
+    Evolutionary algorithm network design is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Evolutionary algorithm network design is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Evolutionary algorithm network design.  If not, see <http://www.gnu.org/licenses/>.
+"""
 
 import elementtree.ElementTree as ET
 import random
@@ -142,7 +158,7 @@ if __name__=="__main__":
     g = [fact.base_graph(), fact.base_graph()]
     for d in g:
         d.writexml()
-    while len(g) < 1000000:
+    while len(g) < 100000:
         g.extend(random.choice(g).merge(random.choice(g)))
     print "Starting-----\n"
     start = time.clock()
