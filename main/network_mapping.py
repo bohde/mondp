@@ -20,7 +20,10 @@
 import elementtree.ElementTree as ET
 import random
 import time
+import pipes
 random.seed(42)
+TEMP='/tmp/'
+
 
 class GraphFactory():
     def __init__(self, nodes_file, edges_file):
@@ -120,9 +123,9 @@ class Edges():
         edges = ET.parse(edges)
         for edge in edges.getroot().getchildren():
             d = edge.attrib
-            self.add(self.nodes.get_mapped_id(d["fromnode"]), self.nodes.get_mapped_id(d["tonode"]),  d["spread_type"])
+            self.add(self.nodes.get_mapped_id(d["fromnode"]), self.nodes.get_mapped_id(d["tonode"]))
 
-    def add(self, n1, n2, spread):
+    def add(self, n1, n2, spread="Center"):
         key = frozenset((n1, n2))
         self.edges[key] = (str(self.n), spread)
         self.n += 1
@@ -152,18 +155,21 @@ class Edges():
             k = tuple(k)
             xmledges.append(ET.Element("edge", id=edge[0], fromnode=k[0], tonode=k[1], spread_type=edge[1]))
         return xmledges
-    
-if __name__=="__main__": 
-    fact = GraphFactory("hokkaido-japan/hokkaido.nod.xml", "hokkaido-japan/hokkaido.edg.xml")
-    g = [fact.base_graph(), fact.base_graph()]
-    for d in g:
-        d.writexml()
-    while len(g) < 100000:
-        g.extend(random.choice(g).merge(random.choice(g)))
-    print "Starting-----\n"
-    start = time.clock()
-    for n in g:
-        n.merge(random.choice(g))
-        n.alter_edges()
-    print time.clock() - start
-    
+
+class Network():
+    def __init__(self, network_file=None):
+        self.network_file = network_file
+        if(network_file):
+            self.load()
+
+    def setNetworkFile(network_file):
+        self.network_file = network_file
+
+    def load(self):
+        pass
+
+    def evalfitness(self):
+        #tree = 
+        last_el = tree.getroot()[-1].attrib
+        print float(last_el["meanTravelTime"]), float(last_el["meanWaitingTime"])
+        

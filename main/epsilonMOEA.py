@@ -1,5 +1,6 @@
 import random
 import math
+import os
 
 def euclid_dist(a, b):
     return sum(abs(n-m) for n,m in zip(a,b))
@@ -69,20 +70,22 @@ class Population():
     def archive_population(self):
         return self.archive
 
-    def archive_selection(self):
+    def archive_select(self):
         return random.choice(self.archive)
 
     archive_acceptance = acceptance_wrapper(1)
+
+    def evaluation(self):
+        self.archive_select().mate(self.pop_selection())
 
     def clear(self):
         pass
 
 class Individual():
     """
-    The genome representation
+    A stub genome representation
     """
     genome = None
-
 
     def __init__(self):
         """
@@ -93,6 +96,21 @@ class Individual():
         self.ident_array = None
 
     def evaluate(self):
+        """
+        subclass this. 
+        """
+        pass
+
+    def random(self):
+        """
+        subclass this
+        """
+        pass
+
+    def mate(self, other):
+        """
+        subclass this
+        """
         pass
 
     def __dom_wrapper(pop):
@@ -132,21 +150,39 @@ class Individual():
 
     def set_mins(mins):
         self.mins = mins
-        
-
-    
 
 
 class epsilonMOEA():
-    def __init__(self, pop_base):
+    def __init__(self):
         pass
+
+    def setGenome(self, genome):
+        self.genome = genome
+
+    def setNumberofEvals(evals):
+        self.evals = evals
+
+    def initPop(self, popsize):
     """
     Step 1 Randomly initialize a population P (0). The
         non-dominated solutions of P (0) are copied to
         an archive population E(0). Set the iteration
         counter t = 0.
     """
+    if not(self.genome):
+        print "Genome not set!"
+        os.exit(1)
+    self.population = Population(popsize, self.genome)
+    self.population.split_population()
 
+
+    def runEvals(self, num_evals):
+        for i in xrange(num_evals - self.popsize):
+            self.population.evaluation()
+            """
+            add some output here
+            """
+ 
     """
     Step 2 One solution p is chosen from the population
         P (t) using the pop selection procedure.
