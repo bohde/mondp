@@ -10,7 +10,7 @@ def throwAwayThread(targ):
     t = threading.Thread(target=targ)
     t.deamon = True
     t.start()
-    t.run()
+    #t.run()
 
 def writeNodesOrEdgesToPipe(et, pipe):
     """
@@ -63,33 +63,41 @@ class SUMOInterface():
     setup = applyToAllFilesWrapper(os.mkfifo)
     breakdown = applyToAllFilesWrapper(os.unlink)
 
-    def writeNodes(self):
-        writeNodesOrEdgesToPipe(self.nodes, pipes.Template().open(self.getNodeFile(), 'w'))
+    def openPipeAndWrite(self, f, obj):
+        def inner():
+            print f
+            try:
+                os.mkfifo(f)
+            except:
+                pass
+            pipe = open(f, 'w')
+            writeNodesOrEdgesToPipe(obj, pipe)
+        throwAwayThread(inner)
 
     def makeNetwork(self, edges):
         dev_null = open(os.devnull)
-        edgef = pipes.Template().open(self.getEdgeFile(), 'w')
-        nodef = pipes.Template().open(self.getNodeFile(), 'w')
+        self.openPipeAndWrite(self.getEdgeFile(), edges)
+        self.openPipeAndWrite(self.getNodeFile(), self.nodes)
         os.mkfifo(self.getNetFile())
         args = ['sumo-netconvert', '-v', '-n=' + self.getNodeFile(),  '-e',  self.getEdgeFile(), '-o', self.getNetFile()]
-        writeNodesOrEdgesToPipe(self.nodes, nodef)
-        writeNodesOrEdgesToPipe(edges, edgef)
         s = subprocess.Popen(args)#, stdout=dev_null.fileno(), stderr=dev_null.fileno())
-        tree = None
+        ##p = subprocess.Popen(['cat', self.getNetFile()], stdout=subprocess.PIPE)
+        ##print p.communicate()[0]
+        #tree = None
         #with open(self.getNetFile(), 'r') as pin:
-            #tree = ET.ElemenentTree(file=pin)
-        edgef.close()
-        nodef.close()
-        dev_null.close()
-        return tree
+            #tree = ET.ElementTree(file=pin)
+        #dev_null.close()
+        #return tree
 
     def execute(self):
         dev_null = open(os.devnull)
+        os.mkfifo(self.getOutFile())
         args = [self.sumo, '-b', '0', '-e', '1000', '-n', '/home/numix/school/ea/cs448/data/rand/net.net.xml', '-r', '/home/numix/school/ea/cs448/data/rand/rand.rou.xml', '--emissions-output', self.getOutFile()]
         p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         tree = None
         with open(self.getOutFile(), 'r') as pin:
             tree = ET.ElementTree(file=pin)
+        os.unlink(self.getOutFile())
         return tree
 
 if __name__ == "__main__":
@@ -97,8 +105,8 @@ if __name__ == "__main__":
         s.breakdown()
         s.setNodes(nm.Nodes('/home/numix/school/ea/cs448/data/rand/rand.nod.xml'))
         net = s.makeNetwork(nm.Edges(s.nodes, '/home/numix/school/ea/cs448/data/rand/rand.edg.xml'))
-        #print ET.tostring(net.getroot())
-        #tree = s.execute()
-        #last_el = tree.getroot()[-1].attrib
-        #print float(last_el["meanTravelTime"]), float(last_el["meanWaitingTime"])
+        print ET.tostring(net.getroot())
+        tree = s.execute()
+        last_el = tree.getroot()[-1].attrib
+        print float(last_el["meanTravelTime"]), float(last_el["meanWaitingTime"])
         #s.breakdown()
