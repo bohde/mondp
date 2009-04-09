@@ -88,22 +88,22 @@ class SUMOInterface():
         self.openPipeAndWrite(self.getNodeFile(), self.nodes)
         sfifo(self.getNetFile())
         args = ['sumo-netconvert', '-v', '-n=' + self.getNodeFile(),  '-e',  self.getEdgeFile(), '-o', self.getNetFile()]
-        s = subprocess.Popen(args)#, stdout=dev_null.fileno(), stderr=dev_null.fileno())
+        s = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         self.network = ET.ElementTree(file=self.getNetFile())
 
     def makeRoutes(self, flows):
-        def_null = open(os.devnull)
+        dev_null = open(os.devnull)
         self.openPipeAndWriteXML(self.getNetFile(), self.network)
         sfifo(self.getRouteFile())
         args = ["sumo-duarouter", "--flows=%s" % flows,  "--net=%s" % self.getNetFile(),  "--output-file=%s" % self.getRouteFile(),  "-b",  "0",  "-e" ,  "2000"]
-        p1 = subprocess.Popen(args)#, stdout=dev_null.fileno(), stderr=dev_null.fileno())
+        p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
 
     def execute(self):
         dev_null = open(os.devnull)
         self.openPipeAndWriteXML(self.getNetFile()+'2', self.network)
         sfifo(self.getOutFile())
         args = [self.sumo, '-v', '-b', '0', '-e', '1000', '-n', self.getNetFile()+'2', '-r', self.getRouteFile(), '--emissions-output', self.getOutFile()]
-        p1 = subprocess.Popen(args)#, stdout=dev_null.fileno(), stderr=dev_null.fileno())
+        p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         tree = None
         with open(self.getOutFile(), 'r') as pin:
             tree = ET.ElementTree(file=pin)

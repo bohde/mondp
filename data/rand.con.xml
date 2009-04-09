@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+
+<!-- generated on Wed Apr  8 21:17:33 2009 by SUMO netgen Version 0.10.2
+<configuration>
+
+   <random_network>
+      <random-net>true</random-net>
+      <rand-iterations>20</rand-iterations>
+   </random_network>
+
+   <output>
+      <plain-output>rand</plain-output>
+   </output>
+
+   <random_number>
+      <abs-rand>true</abs-rand>
+   </random_number>
+
+</configuration>
+-->
+
+<connections>
+	<connection from="13" to="32" lane="0:0"/>
+	<connection from="13" to="44" lane="0:0"/>
+
+	<connection from="17" to="58" lane="0:0"/>
+	<connection from="17" to="54" lane="0:0"/>
+	<connection from="17" to="46" lane="0:0"/>
+
+	<connection from="18" to="32" lane="0:0"/>
+	<connection from="18" to="44" lane="0:0"/>
+
+	<connection from="22" to="74" lane="0:0"/>
+	<connection from="22" to="62" lane="0:0"/>
+
+	<connection from="28" to="81" lane="0:0"/>
+	<connection from="28" to="75" lane="0:0"/>
+
+	<connection from="29" to="74" lane="0:0"/>
+	<connection from="29" to="62" lane="0:0"/>
+
+	<connection from="3" to="22" lane="0:0"/>
+	<connection from="3" to="28" lane="0:0"/>
+	<connection from="3" to="18" lane="0:0"/>
+
+	<connection from="31" to="84" lane="0:0"/>
+	<connection from="31" to="82" lane="0:0"/>
+
+	<connection from="32" to="81" lane="0:0"/>
+	<connection from="32" to="75" lane="0:0"/>
+
+	<connection from="44" to="94" lane="0:0"/>
+	<connection from="44" to="90" lane="0:0"/>
+
+	<connection from="7" to="31" lane="0:0"/>
+	<connection from="7" to="29" lane="0:0"/>
+
+	<connection from="74" to="100" lane="0:0"/>
+	<connection from="74" to="106" lane="0:0"/>
+
+	<connection from="75" to="94" lane="0:0"/>
+	<connection from="75" to="90" lane="0:0"/>
+
+	<connection from="82" to="100" lane="0:0"/>
+	<connection from="82" to="106" lane="0:0"/>
+
+</connections>

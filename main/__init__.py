@@ -1,1 +1,1 @@
-__all__ = ["epsilonMOEA"]
+__all__ = ["epsilonMOEA", 'interface', 'network_mapping']
