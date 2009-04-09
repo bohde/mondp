@@ -123,11 +123,14 @@ class Edges():
         edges = ET.parse(edges)
         for edge in edges.getroot().getchildren():
             d = edge.attrib
-            self.add(self.nodes.get_mapped_id(d["fromnode"]), self.nodes.get_mapped_id(d["tonode"]))
+            self.add_id(d["id"], self.nodes.get_mapped_id(d["fromnode"]), self.nodes.get_mapped_id(d["tonode"]))
+
+    def add_id(self, id, n1, n2, spread="Center"):
+        key = frozenset((n1, n2))
+        self.edges[key] = (str(id), spread)
 
     def add(self, n1, n2, spread="Center"):
-        key = frozenset((n1, n2))
-        self.edges[key] = (str(self.n), spread)
+        self.add_id("s" + str(self.n), n1, n2, spread)
         self.n += 1
 
     def lookup(self, n1, n2):

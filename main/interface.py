@@ -6,6 +6,12 @@ import elementtree.ElementTree as ET
 import network_mapping as nm
 import threading
 
+def sfifo(f):
+    try:
+        os.mkfifo(f)
+    except:
+        pass
+
 def throwAwayThread(targ):
     t = threading.Thread(target=targ)
     t.deamon = True
@@ -50,6 +56,7 @@ class SUMOInterface():
     getEdgeFile = getFilename(".edg.xml")
     getNetFile = getFilename(".net.xml")
     getOutFile = getFilename(".out.xml")
+    getRouteFile = getFilename(".rou.xml")
 
     def applyToAllFilesWrapper(func):
         def applyToAllFiles(self):
@@ -63,37 +70,40 @@ class SUMOInterface():
     setup = applyToAllFilesWrapper(os.mkfifo)
     breakdown = applyToAllFilesWrapper(os.unlink)
 
-    def openPipeAndWrite(self, f, obj):
-        def inner():
-            print f
-            try:
-                os.mkfifo(f)
-            except:
-                pass
-            pipe = open(f, 'w')
-            writeNodesOrEdgesToPipe(obj, pipe)
-        throwAwayThread(inner)
+    def openPipeAndLambda(lambd):
+        def wrap(self, f, obj):
+            def inner():
+                sfifo(f)
+                pipe = open(f, 'w')
+                lambd(obj, pipe)
+            throwAwayThread(inner)
+        return wrap
+
+    openPipeAndWrite = openPipeAndLambda(writeNodesOrEdgesToPipe)
+    openPipeAndWriteXML = openPipeAndLambda(lambda xml, f: xml.write(f))
 
     def makeNetwork(self, edges):
         dev_null = open(os.devnull)
         self.openPipeAndWrite(self.getEdgeFile(), edges)
         self.openPipeAndWrite(self.getNodeFile(), self.nodes)
-        os.mkfifo(self.getNetFile())
+        sfifo(self.getNetFile())
         args = ['sumo-netconvert', '-v', '-n=' + self.getNodeFile(),  '-e',  self.getEdgeFile(), '-o', self.getNetFile()]
         s = subprocess.Popen(args)#, stdout=dev_null.fileno(), stderr=dev_null.fileno())
-        ##p = subprocess.Popen(['cat', self.getNetFile()], stdout=subprocess.PIPE)
-        ##print p.communicate()[0]
-        #tree = None
-        #with open(self.getNetFile(), 'r') as pin:
-            #tree = ET.ElementTree(file=pin)
-        #dev_null.close()
-        #return tree
+        self.network = ET.ElementTree(file=self.getNetFile())
+
+    def makeRoutes(self, flows):
+        def_null = open(os.devnull)
+        self.openPipeAndWriteXML(self.getNetFile(), self.network)
+        sfifo(self.getRouteFile())
+        args = ["sumo-duarouter", "--flows=%s" % flows,  "--net=%s" % self.getNetFile(),  "--output-file=%s" % self.getRouteFile(),  "-b",  "0",  "-e" ,  "2000"]
+        p1 = subprocess.Popen(args)#, stdout=dev_null.fileno(), stderr=dev_null.fileno())
 
     def execute(self):
         dev_null = open(os.devnull)
-        os.mkfifo(self.getOutFile())
-        args = [self.sumo, '-b', '0', '-e', '1000', '-n', '/home/numix/school/ea/cs448/data/rand/net.net.xml', '-r', '/home/numix/school/ea/cs448/data/rand/rand.rou.xml', '--emissions-output', self.getOutFile()]
-        p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
+        self.openPipeAndWriteXML(self.getNetFile()+'2', self.network)
+        sfifo(self.getOutFile())
+        args = [self.sumo, '-v', '-b', '0', '-e', '1000', '-n', self.getNetFile()+'2', '-r', self.getRouteFile(), '--emissions-output', self.getOutFile()]
+        p1 = subprocess.Popen(args)#, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         tree = None
         with open(self.getOutFile(), 'r') as pin:
             tree = ET.ElementTree(file=pin)
@@ -104,9 +114,9 @@ if __name__ == "__main__":
         s = SUMOInterface()
         s.breakdown()
         s.setNodes(nm.Nodes('/home/numix/school/ea/cs448/data/rand/rand.nod.xml'))
-        net = s.makeNetwork(nm.Edges(s.nodes, '/home/numix/school/ea/cs448/data/rand/rand.edg.xml'))
-        print ET.tostring(net.getroot())
+        s.makeNetwork(nm.Edges(s.nodes, '/home/numix/school/ea/cs448/data/rand/rand.edg.xml'))
+        s.makeRoutes('/home/numix/school/ea/cs448/data/rand/rand.flo.xml')
         tree = s.execute()
         last_el = tree.getroot()[-1].attrib
         print float(last_el["meanTravelTime"]), float(last_el["meanWaitingTime"])
-        #s.breakdown()
+        s.breakdown()
