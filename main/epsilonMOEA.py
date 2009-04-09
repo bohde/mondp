@@ -163,17 +163,17 @@ class epsilonMOEA():
         self.evals = evals
 
     def initPop(self, popsize):
-    """
-    Step 1 Randomly initialize a population P (0). The
-        non-dominated solutions of P (0) are copied to
-        an archive population E(0). Set the iteration
-        counter t = 0.
-    """
-    if not(self.genome):
-        print "Genome not set!"
-        os.exit(1)
-    self.population = Population(popsize, self.genome)
-    self.population.split_population()
+        """
+        Step 1 Randomly initialize a population P (0). The
+            non-dominated solutions of P (0) are copied to
+            an archive population E(0). Set the iteration
+            counter t = 0.
+        """
+        if not(self.genome):
+            print "Genome not set!"
+            os.exit(1)
+        self.population = Population(popsize, self.genome)
+        self.population.split_population()
 
 
     def runEvals(self, num_evals):

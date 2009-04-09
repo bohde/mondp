@@ -109,14 +109,3 @@ class SUMOInterface():
             tree = ET.ElementTree(file=pin)
         os.unlink(self.getOutFile())
         return tree
-
-if __name__ == "__main__":
-        s = SUMOInterface()
-        s.breakdown()
-        s.setNodes(nm.Nodes('/home/numix/school/ea/cs448/data/rand/rand.nod.xml'))
-        s.makeNetwork(nm.Edges(s.nodes, '/home/numix/school/ea/cs448/data/rand/rand.edg.xml'))
-        s.makeRoutes('/home/numix/school/ea/cs448/data/rand/rand.flo.xml')
-        tree = s.execute()
-        last_el = tree.getroot()[-1].attrib
-        print float(last_el["meanTravelTime"]), float(last_el["meanWaitingTime"])
-        s.breakdown()
