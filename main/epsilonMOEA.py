@@ -15,7 +15,7 @@ class Population():
         self.inds = [self.genome.random() for n in xrange(self.popsize)]
 
     def pop_select(self):
-        self._pop_select(randInt(0, len(self.inds) - 1), randInt(0, len(self.inds) - 1), randInt(0,1))
+        return self._pop_select(random.randint(0, len(self.inds) - 1), random.randint(0, len(self.inds) - 1), random.randint(0,1))
 
     def _pop_select(self, a, b, c):
         one, two = self.inds[a], self.inds[b]
@@ -76,7 +76,9 @@ class Population():
     archive_acceptance = acceptance_wrapper(1)
 
     def evaluation(self):
-        self.archive_select().mate(self.pop_selection())
+        for ind in self.archive_select().mate(self.pop_select()):
+            if(not(self.archive_acceptance(ind))):
+                self.pop_acceptance(ind)
 
     def clear(self):
         pass
@@ -159,7 +161,7 @@ class epsilonMOEA():
     def setGenome(self, genome):
         self.genome = genome
 
-    def setNumberofEvals(evals):
+    def setNumberofEvals(self, evals):
         self.evals = evals
 
     def initPop(self, popsize):
@@ -172,16 +174,18 @@ class epsilonMOEA():
         if not(self.genome):
             print "Genome not set!"
             os.exit(1)
+        self.popsize = popsize
         self.population = Population(popsize, self.genome)
+        self.population.initialize()
         self.population.split_population()
 
 
-    def runEvals(self, num_evals):
-        for i in xrange(num_evals - self.popsize):
+    def runEvals(self):
+        for i in xrange(self.popsize, self.evals,  2):
             self.population.evaluation()
-            """
-            add some output here
-            """
+            for f in (self.population.archive):
+                print f.fitness
+        
  
     """
     Step 2 One solution p is chosen from the population

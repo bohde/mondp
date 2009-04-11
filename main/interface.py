@@ -6,6 +6,7 @@ import elementtree.ElementTree as ET
 import network_mapping as nm
 import threading
 
+
 def sfifo(f):
     try:
         os.mkfifo(f)
@@ -73,9 +74,9 @@ class SUMOInterface():
     def openPipeAndLambda(lambd):
         def wrap(self, f, obj):
             def inner():
-                sfifo(f)
                 pipe = open(f, 'w')
                 lambd(obj, pipe)
+            sfifo(f)
             throwAwayThread(inner)
         return wrap
 
@@ -88,7 +89,7 @@ class SUMOInterface():
         self.openPipeAndWrite(self.getNodeFile(), self.nodes)
         sfifo(self.getNetFile())
         args = ['sumo-netconvert', '-v', '-n=' + self.getNodeFile(),  '-e',  self.getEdgeFile(), '-o', self.getNetFile()]
-        s = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
+        s = subprocess.Popen(args)#, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         self.network = ET.ElementTree(file=self.getNetFile())
 
     def makeRoutes(self, flows):
@@ -97,6 +98,8 @@ class SUMOInterface():
         sfifo(self.getRouteFile())
         args = ["sumo-duarouter", "--flows=%s" % flows,  "--net=%s" % self.getNetFile(),  "--output-file=%s" % self.getRouteFile(),  "-b",  "0",  "-e" ,  "2000"]
         p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
+        routes = ET.ElementTree(file=self.getRouteFile())
+        self.openPipeAndWriteXML(self.getRouteFile(), routes)
 
     def execute(self):
         dev_null = open(os.devnull)
@@ -104,8 +107,5 @@ class SUMOInterface():
         sfifo(self.getOutFile())
         args = [self.sumo, '-v', '-b', '0', '-e', '1000', '-n', self.getNetFile()+'2', '-r', self.getRouteFile(), '--emissions-output', self.getOutFile()]
         p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
-        tree = None
-        with open(self.getOutFile(), 'r') as pin:
-            tree = ET.ElementTree(file=pin)
-        os.unlink(self.getOutFile())
+        tree = ET.ElementTree(file=self.getOutFile())
         return tree

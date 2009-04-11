@@ -21,53 +21,50 @@ import elementtree.ElementTree as ET
 import random
 import time
 import pipes
+from interface import SUMOInterface
+from epsilonMOEA import Individual
 random.seed(42)
 TEMP='/tmp/'
 
-
-class GraphFactory():
-    def __init__(self, nodes_file, edges_file):
-        self.n = 0
-        self.nodes_file = nodes_file
-        self.edges_file = edges_file
-
-    def base_graph(self):
-        g = self.graph()
-        g.load()
-        return g
-
-    def graph(self):
-        g = Graph(self.nodes_file, self.edges_file)
-        g.id = self.n
-        self.n += 1
-        g.fact = self
-        return g
-
-class Graph():
-    def __init__(self, nodes_file=None, edges_file=None ):
+class Graph(Individual):
+    def __init__(self, nodes_file=None, edges_file=None, flo_file=None):
         self.nodes = Nodes()
         self.edges = Edges(self.nodes)
         self.nodes_file = nodes_file
         self.edges_file = edges_file
+        self.flo_file = flo_file
+        self.mins = (-10000, -10000)
+        self.eps = (1, 1)
+        Individual.__init__(self)
 
     def load(self):
         self.nodes = Nodes(self.nodes_file)
         self.edges = Edges(self.nodes, self.edges_file)
+        self.edges.load_protected_edges(self.flo_file)
+
+    def copy(self):
+        other = Graph()
+        other.set_files(*self.get_files())
+        other.nodes = self.nodes
+        other.edges = self.edges.copy()
+        return other
 
     def get_files(self):
-        return (nodes_file, edges_file)
+        return (self.nodes_file, self.edges_file, self.flo_file)
 
-    def merge(self, other):
-        child1 = self.fact.graph()
-        child2 = self.fact.graph()
+    def set_files(self, nodes_file, edges_file, flo_file):
+        self.nodes_file, self.edges_file, self.flo_file = nodes_file, edges_file, flo_file
+
+    def mate(self, other):
+        child1 = Graph(*self.get_files())
+        child2 = Graph(*self.get_files())
         child1.nodes = self.nodes
         child2.nodes = self.nodes
-        for edge in self.edges.get_edges():
-            if other.contains_edge(edge):
-                child1.add_edge(edge, self.edges.lookup(*edge))
-                child2.add_edge(edge, self.edges.lookup(*edge))
-            else:
-                random.choice((child1, child2)).add_edge(edge, self.edges.lookup(*edge))
+        child1.edges, child2.edges = self.edges.mate(other.edges)
+        child1.alter_edges()
+        child2.alter_edges()
+        child1.evaluate()
+        child2.evaluate()
         return child1, child2
 
     def contains_edge(self, edge):
@@ -76,12 +73,36 @@ class Graph():
     def add_edge(self, edge, spread):
         self.edges.add(edge[0], edge[1], spread)
 
+    def add_named_edge(self,key, edge):
+        self.edges.add_edge(key, edge)
+
     def writexml(self):
         ET.ElementTree(self.nodes.toxml()).write(self.nodes_file + "." + str(self.id))
         ET.ElementTree(self.edges.toxml()).write(self.edges_file + "." + str(self.id))
 
     def alter_edges(self):
         self.edges.alter(*self.nodes.get_random_pair())
+
+    def evaluate(self):
+        s = SUMOInterface()
+        s.breakdown()
+        s.setNodes(self.nodes)
+        s.makeNetwork(self.edges)
+        s.makeRoutes(self.flo_file)
+        tree = s.execute()
+        last_el = tree.getroot()[-1].attrib
+        self.fitness = [-1 * float(last_el["meanTravelTime"]), -1 * float(last_el["meanWaitingTime"])]
+        for i,x in enumerate(self.fitness):
+            if x >0:
+                self.fitness[i] = -10000
+        print self.fitness
+        s.breakdown()
+        del s
+
+    def random(self):
+        o = self.copy()
+        o.alter_edges()
+        return o
 
 class Nodes():
     def __init__(self, nodes=None):
@@ -112,12 +133,18 @@ class Nodes():
         return xmlnodes
 
 class Edges():
+    n = 0
     def __init__(self, nodes, edges=None):
         self.edges = {}
         self.nodes = nodes
-        self.n = 0
+        self.protected_edges = set()
         if edges:
             self.load(edges)
+
+    def copy(self):
+        other = Edges(self.nodes)
+        other.edges = dict(self.edges)
+        return other
 
     def load(self, edges):
         edges = ET.parse(edges)
@@ -125,20 +152,29 @@ class Edges():
             d = edge.attrib
             self.add_id(d["id"], self.nodes.get_mapped_id(d["fromnode"]), self.nodes.get_mapped_id(d["tonode"]))
 
+    def load_protected_edges(self, flow):
+        flows = ET.parse(flow)
+        for flow in flows.getroot().getchildren():
+            self.protected_edges.update((flow.attrib["begin"], flow.attrib["end"]))
+
+    def add_edge(self, key, edge):
+        self.edges[key] = edge
+
     def add_id(self, id, n1, n2, spread="Center"):
         key = frozenset((n1, n2))
-        self.edges[key] = (str(id), spread)
+        if id not in [edge[0] for edge in self.edges.values()]:
+            self.edges[key] = (str(id), spread)
 
     def add(self, n1, n2, spread="Center"):
-        self.add_id("s" + str(self.n), n1, n2, spread)
-        self.n += 1
+        self.add_id("s" + str(Edges.n), n1, n2, spread)
+        Edges.n += 1
 
     def lookup(self, n1, n2):
         key = frozenset((n1, n2))
         return (self.edges[key])[1]
 
     def get_edges(self):
-        return [tuple(x) for x in self.edges.keys()]
+        return [x for x in self.edges.keys()]
 
     def alter(self, n1, n2):
         """
@@ -149,6 +185,25 @@ class Edges():
         else:
             self.add(n1, n2, "center")
 
+    def mate(self, other):
+        child1 = Edges(self.nodes)
+        child2 = Edges(self.nodes)
+        child1.protected_edges = self.protected_edges
+        child2.protected_edges = self.protected_edges
+        for edge in self.edges.keys():
+            if edge in other.edges:
+                child1.edges[edge] = self.edges[edge]
+                child2.edges[edge] = self.edges[edge]
+            else:
+                random.choice((child1, child2)).edges[edge] = self.edges[edge]
+        for edge in other.edges.keys():
+            if not(edge in self.edges):
+                random.choice((child1, child2)).edges[edge] = other.edges[edge]
+        return child1, child2
+
+    def protected(self, n1, n2):
+        return self.edges[frozenset((n1, n2))][0] in self.protected_edges
+
     def contains(self, n1, n2):
         return frozenset((n1, n2)) in self.edges
 
@@ -158,21 +213,3 @@ class Edges():
             k = tuple(k)
             xmledges.append(ET.Element("edge", id=edge[0], fromnode=k[0], tonode=k[1], spread_type=edge[1]))
         return xmledges
-
-class Network():
-    def __init__(self, network_file=None):
-        self.network_file = network_file
-        if(network_file):
-            self.load()
-
-    def setNetworkFile(network_file):
-        self.network_file = network_file
-
-    def load(self):
-        pass
-
-    def evalfitness(self):
-        #tree = 
-        last_el = tree.getroot()[-1].attrib
-        print float(last_el["meanTravelTime"]), float(last_el["meanWaitingTime"])
-        
