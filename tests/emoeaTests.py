@@ -99,6 +99,13 @@ class TestPopulationArchiveAcceptance(TestPopulation):
         self.pop.split_population()
         self.testInd = self.genome()
 
+    def testequals(self):
+        self.testInd.fitness = (1, 0)
+        l = len(self.pop.archive)
+        self.assertEquals(self.pop.archive_acceptance(self.testInd), False)
+        self.assertEquals(self.testInd in self.pop.archive, False)
+        self.assertEquals(l, len(self.pop.archive))
+
     def testnondominating(self):
         self.testInd.fitness = (0, 0)
         self.assertEquals(self.pop.archive_acceptance(self.testInd), False)

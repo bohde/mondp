@@ -48,6 +48,7 @@ class Population():
                     if p == 0:
                         pop = random.choice(self.inds)
                     else:
+                        pop = None
                         for x in self.archive:
                             if ind.ident_array == x.ident_array:
                                 indom = ind.dominates(x)
@@ -56,7 +57,6 @@ class Population():
                                     break
                                 if indom == 0 or indom == -1:
                                     return False
-                        pop = None
             else:
                     pop = random.choice(dom)
             if pop:
@@ -180,11 +180,12 @@ class epsilonMOEA():
         self.population.split_population()
 
 
-    def runEvals(self):
+    def runEvals(self, n):
         for i in xrange(self.popsize, self.evals,  2):
             self.population.evaluation()
-            for f in (self.population.archive):
-                print f.fitness
+            print len(self.population.archive)
+        #print len(set([x.fitness for x in self.population.archive]))
+        return '\n'.join([str(x.fitness) for x in self.population.archive])
         
  
     """

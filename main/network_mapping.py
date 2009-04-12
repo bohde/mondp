@@ -34,7 +34,7 @@ class Graph(Individual):
         self.edges_file = edges_file
         self.flo_file = flo_file
         self.mins = (-10000, -10000)
-        self.eps = (1, 1)
+        self.eps = (.1, .1)
         Individual.__init__(self)
 
     def load(self):
