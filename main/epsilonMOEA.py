@@ -180,7 +180,7 @@ class epsilonMOEA():
         self.population.split_population()
 
 
-    def runEvals(self, n):
+    def runEvals(self):
         for i in xrange(self.popsize, self.evals,  2):
             self.population.evaluation()
             print len(self.population.archive)

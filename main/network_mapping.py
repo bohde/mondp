@@ -46,6 +46,7 @@ class Graph(Individual):
         other = Graph()
         other.set_files(*self.get_files())
         other.nodes = self.nodes
+        other.cost = self.cost
         other.edges = self.edges.copy()
         return other
 
@@ -58,7 +59,9 @@ class Graph(Individual):
     def mate(self, other):
         child1 = Graph(*self.get_files())
         child2 = Graph(*self.get_files())
+        child1.cost = self.cost
         child1.nodes = self.nodes
+        child2.cost = self.cost
         child2.nodes = self.nodes
         child1.edges, child2.edges = self.edges.mate(other.edges)
         child1.alter_edges()
@@ -91,10 +94,11 @@ class Graph(Individual):
         s.makeRoutes(self.flo_file)
         tree = s.execute()
         last_el = tree.getroot()[-1].attrib
-        self.fitness = [-1 * float(last_el["meanTravelTime"]), -1 * float(last_el["meanWaitingTime"])]
+        cost = self.cost.check_costs(self.edges.convert())
+        self.fitness = [-1 * float(last_el["meanTravelTime"]), -1 * float(last_el["meanWaitingTime"]), -1*cost]
         for i,x in enumerate(self.fitness):
             if x >0:
-                self.fitness[i] = -10000
+                self.fitness[i] = -1000000
         print self.fitness
         s.breakdown()
         del s
@@ -125,6 +129,9 @@ class Nodes():
 
     def get_random_pair(self):
         return random.sample(self.nodes.keys(), 2)
+
+    def get_point(self, n):
+        return [float(x) for x in self.nodes[n]]
 
     def toxml(self):
         xmlnodes = ET.Element("nodes")
@@ -206,6 +213,9 @@ class Edges():
 
     def contains(self, n1, n2):
         return frozenset((n1, n2)) in self.edges
+
+    def convert(self):
+        return [[self.nodes.get_point(p) for p in edge] for edge in self.edges.keys()]
 
     def toxml(self):
         xmledges = ET.Element("edges")

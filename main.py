@@ -1,20 +1,24 @@
 #!/usr/bin/python
 from main.epsilonMOEA import epsilonMOEA
 from main.network_mapping import Graph
+from main.costChecker import costChecker
 
 def main():
-    f = open("out", 'w')
-    for i in range(10):
-        f.write("Run %s\n" %i)
+    #f = open("out", 'w')
+    c = costChecker.processCostFile('data/rand.cost.xml')
+    for i in range(1):
+        #f.write("Run %s\n" %i)
         g = Graph('data/rand.nod.xml', 'data/rand.edg.xml', 'data/rand.flo.xml')
+        g.cost = c
         g.load()
-        e = epsilonMOEA()
-        e.setGenome(g)
-        e.setNumberofEvals(5000)
-        e.initPop(50)
-        f.write(e.runEvals(30))
-        f.write("\n\n")
-    f.close()
+        print g.evaluate()
+        #e = epsilonMOEA()
+        #e.setGenome(g)
+        #e.setNumberofEvals(1000)
+        #e.initPop(50)
+        #f.write(e.runEvals())
+        #f.write("\n\n")
+    #f.close()
 
 
 if __name__=="__main__":
