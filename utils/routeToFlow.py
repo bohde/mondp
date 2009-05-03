@@ -17,11 +17,11 @@ def process_routes(xmlroutes):
 
 def process_vehicle(v):
     d = process_route(v.find("route"))
-    d.update({"id":v.attrib["id"], "begin":begin, "end":end, "no":str(random.randint(1, 5))})
+    d.update({"id":v.attrib["id"], "begin":begin, "end":end, "no":'1'})
     return d
 
 def process_route(r):
-    e = r.attrib["edges"].split()
+    e = r.text.split()
     return {"from":e[0], "to":e[-1]}
 
 if __name__=="__main__":

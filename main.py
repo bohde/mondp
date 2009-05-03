@@ -5,10 +5,10 @@ from main.costChecker import costChecker
 
 def main():
     f = open("out", 'w')
-    c = costChecker.processCostFile('data/rand.cost.xml')
+    c = costChecker.processCostFile('data/rand/rand.cost.xml')
     for i in range(30):
         f.write("Run %s\n" %i)
-        g = Graph('data/rand.nod.xml', 'data/rand.edg.xml', 'data/rand.flo.xml')
+        g = Graph('data/rand/rand.nod.xml', 'data/rand/rand.edg.xml', 'data/rand/rand.flo.xml')
         g.cost = c
         g.load()
         print g.evaluate()

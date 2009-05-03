@@ -111,7 +111,8 @@ class Graph(Individual):
     def trim(self,route, point1, point2):
         self.nodes.trim(point1, point2)
         self.edges.trim()
-        route.trim(x[0] for x in self.edges.edges.values())
+        print self.edges.edges.values()
+        route.trim(x.id for x in self.edges.edges.values())
         
 
 class Nodes():
@@ -421,7 +422,7 @@ class Routes():
         for route in routes.getroot().getchildren():
             d = route.attrib
             c = route.getchildren()[0]
-            self.routes.append(Route(d["id"], d["depart"], c.attrib["edges"]))
+            self.routes.append(Route(d["id"], d["depart"], c.text))
 
     def toxml(self):
         routes = ET.Element("routes")
