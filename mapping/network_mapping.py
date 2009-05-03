@@ -94,7 +94,7 @@ class Graph(Individual):
         s.makeRoutes(self.flo_file)
         tree = s.execute()
         last_el = tree.getroot()[-1].attrib
-        cost = self.cost.check_costs(self.edges.convert())
+        cost = self.cost.check_costs(self.edges.convert_modifiable()) + self.edges.total_costs()
         self.fitness = [-1 * float(last_el["meanTravelTime"]), -1 * float(last_el["meanWaitingTime"]), -1*cost]
         for i,x in enumerate(self.fitness):
             if x >0:
@@ -126,9 +126,9 @@ class Nodes():
         nodes = ET.parse(nodes)
         for node in nodes.getroot().getchildren():
             d = node.attrib
-            self.mapping[d["id"]] = str(self.n)
-            self.nodes[str(self.n)] = (d["x"], d["y"])
-            self.n += 1
+            self.mapping[d["id"]] = d["id"]
+            self.nodes[d["id"]] = (d["x"], d["y"])
+            #self.n += 1
 
     def get_mapped_id(self, id):
         return self.mapping[id]
@@ -158,6 +158,113 @@ class Nodes():
         self.nodes = new_nodes
         print "done deleting"
 
+
+def parametric(p,h):
+    p = float(p)
+    h = float(h)
+    def closure(t):
+        return (p-h) * t + h
+    return closure
+
+def distance(p1, p2):
+    if not(p1):
+        return 0
+    return ((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** .5
+    #return (sum(map(lambda l: reduce(lambda x, y: (x - y) ** 2, l), zip(p1, p2))) ** .5)
+
+class Shape():
+    delta = 1
+    def __init__(self, fromnode, tonode, shape):
+        self.shape = [fromnode] + shape + [tonode] #These are all tuples. (x,y)
+        self.deltax = Shape.delta
+        self.detaxy = Shape.delta
+
+    def mutate(self):
+        index = random.randint(0, len(self.shape) - 2)
+        x = parametric(self.shape[index][0], self.shape[index + 1][0])
+        y = parametric(self.shape[index][1], self.shape[index + 1][1])
+        t = random.uniform(0, 1)
+        self.shape = self.shape[index:] + list([(x(t) + random.gauss(0, self.deltax), y(t) + random.gauss(0, self.deltax))]) + self.shape[:index]
+        ########
+        # Let's maybe alter deltax and deltay
+
+    def parsed(self):
+        #print self.shape
+        return ' '.join(["%f,%f" % c for c in self.shape[1:-1]])
+
+    def parsedrev(self):
+        return ' '.join(["%f,%f" % c for c in reverse(self.shape[1:-1])])
+
+
+
+class Edge():
+    shapeMut = .05
+    priorityMut = .05
+    priorityDelta = 1
+    laneMut = .05
+    laneDelta = 2
+    spreadMut = .01
+    costPerUnit = 200
+    def __init__(self, id, fromnode, fromcoord, tonode, tocoord, spread=0, priority=0, nolanes=2, speed=None, shape=[], modifiable=True):
+        self.spread = spread #0 for center, 1 for right, -1 for left (reversed edge)
+        self.priority = priority
+        self.nolanes = nolanes
+        self.maxspeed = speed
+        self.shape = Shape(fromcoord, tocoord, shape)
+        self.id = id
+        self.fromnode = fromnode
+        self.tonode = tonode
+        self.modifiable = modifiable
+
+    def mutate(self):
+        if modifiable and rand.uniform(0,1) < Edge.shapeMut:
+            self.shape.mutate()
+            self.setMaxSpeed()
+        if rand.uniform(0,1) < Edge.priorityMut:
+            self.priority += random.randint(-priorityDelta, priorityDelta)
+            self.priority = max(0, self.priority)
+
+        if modifiable and rand.uniform(0,1) < Edge.laneMut:
+            self.nolanes += random.randint(-laneDelta, laneDelta)
+            self.nolanes = max(0, self.nolanes)
+
+        if modifiable and rand.uniform(0,1) < Edge.spreadMut:
+            self.spread = random.randint(-1, 1)
+
+    def setMaxSpeed(self):
+        self.maxspeed = 13.9
+
+    def toxml(self):
+        if not(self.maxspeed):
+            self.setMaxSpeed()
+        attrib = {"priority":str(self.priority), "nolanes":str(self.nolanes), "speed":str(self.maxspeed), "id":self.id}
+        attrib["spread"] = ("center", "right")[self.spread]
+        if(self.spread == -1):
+            attrib["tonode"] = str(self.fromnode)
+            attrib["fromnode"] = str(self.tonode)
+            sh = str(self.shape.parsedrev())
+            if len(sh) > 0:
+                attrib["shape"] = sh
+        else:
+            attrib["tonode"] = str(self.tonode)
+            attrib["fromnode"] = str(self.fromnode)
+            sh = str(self.shape.parsed())
+            if len(sh) > 0:
+                attrib["shape"] = sh
+        return ET.Element("edge", attrib)
+
+    def convert(self):
+        return zip(self.shape.shape[1:], self.shape.shape[:-1])
+
+    def length(self):
+        #print self.shape.shape
+        return sum(map(lambda l: distance(*l), self.convert()))
+
+    def cost(self):
+        return self.modifiable * self.length() * Edge.costPerUnit
+
+
+
 class Edges():
     n = 0
     def __init__(self, nodes, edges=None):
@@ -176,7 +283,13 @@ class Edges():
         edges = ET.parse(edges)
         for edge in edges.getroot().getchildren():
             d = edge.attrib
-            self.add_id(d["id"], self.nodes.get_mapped_id(d["fromnode"]), self.nodes.get_mapped_id(d["tonode"]))
+            d["fromcoord"] = self.nodes.get_point(self.nodes.get_mapped_id(d["fromnode"]))
+            d["tocoord"] = self.nodes.get_point(self.nodes.get_mapped_id(d["tonode"]))
+            d["shape"] = list([tuple(float(x) for x in pair.split(",")) for pair in d["shape"].split(" ")])
+            d["modifiable"] = False
+            key = frozenset((d["fromnode"], d["tonode"]))
+            self.add_edge(key, Edge(**d))
+            #self.add_id(d["id"], self.nodes.get_mapped_id(d["fromnode"]), self.nodes.get_mapped_id(d["tonode"]))
 
     def load_protected_edges(self, flow):
         flows = ET.parse(flow)
@@ -186,13 +299,13 @@ class Edges():
     def add_edge(self, key, edge):
         self.edges[key] = edge
 
-    def add_id(self, id, n1, n2, spread="Center"):
+    def add_id(self, id, n1, n2):
         key = frozenset((n1, n2))
-        if id not in [edge[0] for edge in self.edges.values()]:
-            self.edges[key] = (str(id), spread)
+        if id not in [edge.id for edge in self.edges.values()]:
+            self.edges[key] = Edge(id, n1, self.nodes.get_point(n1), n2, self.nodes.get_point(n2))
 
-    def add(self, n1, n2, spread="Center"):
-        self.add_id("s" + str(Edges.n), n1, n2, spread)
+    def add(self, n1, n2):
+        self.add_id("s" + str(Edges.n), n1, n2)
         Edges.n += 1
 
     def lookup(self, n1, n2):
@@ -209,7 +322,7 @@ class Edges():
         if self.contains(n1, n2):
             del self.edges[frozenset((n1, n2))]
         else:
-            self.add(n1, n2, "center")
+            self.add(n1, n2)
 
     def mate(self, other):
         child1 = Edges(self.nodes)
@@ -234,13 +347,16 @@ class Edges():
         return frozenset((n1, n2)) in self.edges
 
     def convert(self):
-        return [[self.nodes.get_point(p) for p in edge] for edge in self.edges.keys()]
+        return reduce(lambda x, y: x + y, [edge.convert() for edge in self.edges.values()])
+
+    def convert_modifiable(self):
+        return reduce(lambda x, y: x + y, [edge.convert() for edge in self.edges.values() if edge.modifiable == True], [])
 
     def toxml(self):
         xmledges = ET.Element("edges")
         for k, edge in self.edges.items():
             k = tuple(k)
-            xmledges.append(ET.Element("edge", id=edge[0], fromnode=k[0], tonode=k[1], spread_type=edge[1]))
+            xmledges.append(edge.toxml())
         return xmledges
 
     def trim(self):
@@ -255,6 +371,9 @@ class Edges():
                 new_edges[e] = v
         self.edges = new_edges
         print "done deleting"
+
+    def total_costs(self):
+        return sum([edge.cost() for edge in self.edges.values()])
         
 
 class Route():
@@ -281,7 +400,7 @@ class Route():
                 return mid([], test[1:])
             else:
                 return begin(test[1:])
-        print self.edges, 
+        print self.edges,
         self.edges = ' '.join(begin(self.edges.split()))
         return len(self.edges) > 0
 

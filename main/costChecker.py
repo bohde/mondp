@@ -20,6 +20,7 @@ def rev_parametric(p, h):
 product = lambda f: reduce(operator.mul, f)
 
 class costChecker():
+    intersectCost = 500
     def __init__(self, x, y, costs):
         self.x = x #3tuple, x min, max, delta
         self.y = y #3tuple, y min, max, delta
@@ -38,11 +39,13 @@ class costChecker():
         make a binary matrix corresponding to the graph
         for each edge mark the intersected grids.
         """
-        return sum(map(sum, costChecker.multMatrices(self.check_intersects(edges), self.costs)))
+        s = self.check_intersects(edges)
+        #print s
+        return sum(map(sum, costChecker.costMatrices(s, self.costs)))
 
 
     def check_intersects(self, edges):
-        return reduce(costChecker.orMatrices, [self.check_intersect(*edge) for edge in edges], self.copy_zero())
+        return reduce(costChecker.addMatrices, [self.check_intersect(*edge) for edge in edges], self.copy_zero())
 
     def check_intersect(self, edge1, edge2):
         t = 0.0
@@ -86,6 +89,8 @@ class costChecker():
 
 
     fMatrices = lambda f: lambda n, m: map(lambda l: map(f, zip(*l)), zip(n, m))
+    dMatrices = lambda f: lambda n, m: map(lambda l: map(f, *zip(*l)), zip(n, m))
+    costMatrices = staticmethod(fMatrices(lambda m: (lambda x, y: (x > 0) * y + (x > 1) * costChecker.intersectCost)(*m)))
     multMatrices = staticmethod(fMatrices(product))
     addMatrices = staticmethod(fMatrices(sum))
     orMatrices = staticmethod(fMatrices(any))

@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2009.4.18)  29 APR 2009 14:57
+This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2009.4.18)  30 APR 2009 21:50
 entering extended mode
  %&-line parsing enabled.
 **final_paper.tex
@@ -16,5 +16,5 @@ Here is how much of TeX's memory you used:
  3277 multiletter control sequences out of 10000+50000
  3640 words of font info for 14 fonts, out of 1200000 for 2000
  28 hyphenation exceptions out of 8191
- 0i,0n,0p,20b,6s stack positions out of 5000i,500n,6000p,200000b,5000s
+ 0i,0n,0p,1b,6s stack positions out of 5000i,500n,6000p,200000b,5000s
 !  ==> Fatal error occurred, no output PDF file produced!
