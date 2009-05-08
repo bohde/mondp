@@ -3,10 +3,13 @@
 Converts a route to flow defs
 """
 import sys
-import elementtree.ElementTree as ET
+try:
+    import xml.eltree.ElementTree as ET
+except:
+    import elementtree.ElementTree as ET
 import random
-begin = str(0)
-end = str(2000)
+begin = str(21600)
+end = str(28800)
 
 
 def process_routes(xmlroutes):
@@ -21,7 +24,10 @@ def process_vehicle(v):
     return d
 
 def process_route(r):
-    e = r.text.split()
+    try:
+        e = r.text.split()
+    except:
+        e = r.attrib["edges"].split()
     return {"from":e[0], "to":e[-1]}
 
 if __name__=="__main__":

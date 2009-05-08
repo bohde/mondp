@@ -4,7 +4,7 @@ from mapping.network_mapping import Graph
 from main.costChecker import costChecker
 
 def main():
-    f = open("out", 'w')
+    f = open("cont", 'w')
     c = costChecker.processCostFile('data/rand/rand.cost.xml')
     for i in range(30):
         f.write("Run %s\n" %i)

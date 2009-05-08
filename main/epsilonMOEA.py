@@ -183,7 +183,6 @@ class epsilonMOEA():
     def runEvals(self):
         for i in xrange(self.popsize, self.evals,  2):
             self.population.evaluation()
-            print len(self.population.archive)
         #print len(set([x.fitness for x in self.population.archive]))
         return '\n'.join([str(x.fitness) for x in self.population.archive])
         

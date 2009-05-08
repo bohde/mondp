@@ -2,10 +2,13 @@ from __future__ import with_statement
 import pipes
 import os
 import subprocess
-import elementtree.ElementTree as ET
+try:
+    import xml.eltree.ElementTree as ET
+except:
+    import elementtree.ElementTree as ET
 import network_mapping as nm
 import threading
-
+import random
 
 def sfifo(f):
     try:
@@ -28,7 +31,7 @@ def writeNodesOrEdgesToPipe(et, pipe):
 
 class SUMOInterface():
     id = 0
-    def __init__(self, file_dir="/tmp/mondp/", sumo="sumo"):
+    def __init__(self, file_dir="/home/numix/tmp/mondp%f/" % random.random(), sumo="sumo"):
         """
         file_dir - output directory. For reading and writing.
         sumo - "sumo executable"
@@ -88,7 +91,8 @@ class SUMOInterface():
         self.openPipeAndWrite(self.getEdgeFile(), edges)
         self.openPipeAndWrite(self.getNodeFile(), self.nodes)
         sfifo(self.getNetFile())
-        args = ['sumo-netconvert', '-v', '-n=' + self.getNodeFile(),  '-e',  self.getEdgeFile(), '-o', self.getNetFile()]
+        args = ['sumo-netconvert', #'-v',
+'-n=' + self.getNodeFile(),  '-e',  self.getEdgeFile(), '-o', self.getNetFile()]
         s = subprocess.Popen(args)#, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         self.network = ET.ElementTree(file=self.getNetFile())
 
@@ -105,7 +109,8 @@ class SUMOInterface():
         dev_null = open(os.devnull)
         self.openPipeAndWriteXML(self.getNetFile()+'2', self.network)
         sfifo(self.getOutFile())
-        args = [self.sumo, '-v', '-b', '0', '-e', '1000', '-n', self.getNetFile()+'2', '-r', self.getRouteFile(), '--emissions-output', self.getOutFile()]
+        args = [self.sumo, #'-v',
+'-b', '0', '-e', '2000', '-n', self.getNetFile()+'2', '-r', self.getRouteFile(), '--emissions-output', self.getOutFile()]
         p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         tree = ET.ElementTree(file=self.getOutFile())
         return tree

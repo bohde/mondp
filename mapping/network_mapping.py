@@ -17,14 +17,19 @@
     along with Evolutionary algorithm network design.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import elementtree.ElementTree as ET
+try:
+    import xml.eltree.ElementTree as ET
+except:
+    import elementtree.ElementTree as ET
 import random
 import time
 import pipes
 from interface import SUMOInterface
 from main.epsilonMOEA import Individual
+from threading import Thread
+TEMP='/tmp/' + str(random.random()) + "/"
+print TEMP
 random.seed(42)
-TEMP='/tmp/'
 
 class Graph(Individual):
     def __init__(self, nodes_file=None, edges_file=None, flo_file=None):
@@ -87,6 +92,7 @@ class Graph(Individual):
         self.edges.alter(*self.nodes.get_random_pair())
 
     def evaluate(self):
+        print "loL"
         s = SUMOInterface()
         s.breakdown()
         s.setNodes(self.nodes)
@@ -132,7 +138,7 @@ class Nodes():
             #self.n += 1
 
     def get_mapped_id(self, id):
-        return self.mapping[id]
+        return id
 
     def get_random_pair(self):
         return random.sample(self.nodes.keys(), 2)
@@ -288,6 +294,10 @@ class Edges():
             d["tocoord"] = self.nodes.get_point(self.nodes.get_mapped_id(d["tonode"]))
             d["shape"] = list([tuple(float(x) for x in pair.split(",")) for pair in d["shape"].split(" ")])
             d["modifiable"] = False
+            try:
+                d["spread"] = 0 if d["spread"] == "center" else 1
+            except:
+                pass
             key = frozenset((d["fromnode"], d["tonode"]))
             self.add_edge(key, Edge(**d))
             #self.add_id(d["id"], self.nodes.get_mapped_id(d["fromnode"]), self.nodes.get_mapped_id(d["tonode"]))
@@ -382,26 +392,28 @@ class Route():
         self.id = id
         self.depart = depart
         self.edges = edges
-        print id, depart, edges
+        #print id, depart, edges
 
     def adjust(self, edges):
         
         def mid(acc, test):
             if test == []:
                 return acc
-            if test[0] in edges:
-                return mid(acc + [test[0]], test[1:])
+            t = test[0].split("#")[0]
+            if t in edges:
+                return mid(acc + [t], test[1:])
             else:
                 return acc
 
         def begin(test):
             if test == []:
                 return []
-            if test[0] in edges:
+            t = test[0].split("#")[0]
+            if t in edges:
                 return mid([], test[1:])
             else:
                 return begin(test[1:])
-        print self.edges,
+        #print self.edges,
         self.edges = ' '.join(begin(self.edges.split()))
         return len(self.edges) > 0
 
@@ -440,3 +452,6 @@ class Routes():
             else:
                print "dropping"
         self.routes = new_routes
+
+    def writexml(self):
+        ET.ElementTree(self.toxml()).write(self.rou_file + "." + "lol")

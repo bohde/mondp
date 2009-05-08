@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2009.4.18)  3 MAY 2009 09:26
+This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2009.4.18)  3 MAY 2009 23:38
 entering extended mode
  %&-line parsing enabled.
 **final_paper.tex
@@ -67,29 +67,49 @@ Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
 \c@ALC@depth=\count94
 \ALC@tlm=\skip46
 \algorithmicindent=\skip47
+)
+(/usr/share/texmf-texlive/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-texlive/tex/latex/graphics/graphics.sty
+Package: graphics 2006/02/20 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-texlive/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/etc/texmf/tex/latex/config/graphics.cfg
+File: graphics.cfg 2007/01/18 v1.5 graphics configuration of teTeX/TeXLive
+)
+Package graphics Info: Driver file: pdftex.def on input line 90.
+
+(/usr/share/texmf-texlive/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2007/01/08 v0.04d Graphics/color for pdfTeX
+\Gread@gobject=\count95
+))
+\Gin@req@height=\dimen105
+\Gin@req@width=\dimen106
 ) (./final_paper.aux)
 \openout1 = `final_paper.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 16.
+(Font)              <12> on input line 18.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 16.
+(Font)              <8> on input line 18.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 16.
-
-[1
+(Font)              <6> on input line 18.
+ [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2
 
@@ -102,21 +122,63 @@ Missing character: There is no ∆ in font cmr10!
 Missing character: There is no ê in font cmr10!
 Missing character: There is no ∆ in font cmr10!
 Missing character: There is no ê in font cmr10!
+Missing character: There is no ∆ in font cmr10!
+Missing character: There is no ê in font cmr10!
+Missing character: There is no ∆ in font cmr10!
+Missing character: There is no ê in font cmr10!
+Missing character: There is no ∆ in font cmr10!
+Missing character: There is no ê in font cmr10!
+Missing character: There is no ∆ in font cmr10!
+Missing character: There is no ê in font cmr10!
  [4]
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <10.95> on input line 72.
- [5] [6]
-[7] [8] [9] [10
+(Font)              <10.95> on input line 74.
+ [5]
+[6] [7] <simulation_toolchain.png, id=34, 289.08pt x 820.06375pt>
+File: simulation_toolchain.png Graphic file (type png)
+
+<use simulation_toolchain.png>
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[8] [9] [10 <./simulation_toolchain.png (PNG copy)>] [11] [12]
+<cont_graph.png, id=50, 642.4pt x 401.5pt>
+File: cont_graph.png Graphic file (type png)
+ <use cont_graph.png>
+Overfull \hbox (121.79883pt too wide) in paragraph at lines 353--354
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<discrete.png, id=51, 642.4pt x 401.5pt>
+File: discrete.png Graphic file (type png)
+ <use discrete.png>
+Overfull \hbox (121.79883pt too wide) in paragraph at lines 360--361
+ [][] 
+ []
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[13] [14 <./cont_graph.png>] [15 <./discrete.png>] [16] (./final_paper.bbl
+Missing character: There is no Œ in font cmr10!
+Missing character: There is no µ in font cmr10!
+)
+[17
+
+] [18
 
 ] (./final_paper.aux) ) 
 Here is how much of TeX's memory you used:
- 599 strings out of 95086
- 7241 string characters out of 1183255
- 60213 words of memory out of 1500000
- 3823 multiletter control sequences out of 10000+50000
- 9725 words of font info for 34 fonts, out of 1200000 for 2000
+ 971 strings out of 95086
+ 11878 string characters out of 1183255
+ 62794 words of memory out of 1500000
+ 4170 multiletter control sequences out of 10000+50000
+ 10071 words of font info for 35 fonts, out of 1200000 for 2000
  28 hyphenation exceptions out of 8191
- 23i,9n,19p,1004b,461s stack positions out of 5000i,500n,6000p,200000b,5000s
+ 25i,9n,21p,1014b,533s stack positions out of 5000i,500n,6000p,200000b,5000s
 </usr/share/texmf-texlive/fonts/type1/bluesky/cm/cmbx10.
 pfb></usr/share/texmf-texlive/fonts/type1/bluesky/cm/cmbx12.pfb></usr/share/tex
 mf-texlive/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf-texlive/fonts/ty
@@ -124,10 +186,11 @@ pe1/bluesky/cm/cmmi8.pfb></usr/share/texmf-texlive/fonts/type1/bluesky/cm/cmr10
 .pfb></usr/share/texmf-texlive/fonts/type1/bluesky/cm/cmr12.pfb></usr/share/tex
 mf-texlive/fonts/type1/bluesky/cm/cmr17.pfb></usr/share/texmf-texlive/fonts/typ
 e1/bluesky/cm/cmr8.pfb></usr/share/texmf-texlive/fonts/type1/bluesky/cm/cmsy10.
-pfb></usr/share/texmf-texlive/fonts/type1/bluesky/cm/cmsy8.pfb>
-Output written on final_paper.pdf (10 pages, 86341 bytes).
+pfb></usr/share/texmf-texlive/fonts/type1/bluesky/cm/cmsy8.pfb></usr/share/texm
+f-texlive/fonts/type1/bluesky/cm/cmti10.pfb>
+Output written on final_paper.pdf (18 pages, 173729 bytes).
 PDF statistics:
- 75 PDF objects out of 1000 (max. 8388607)
+ 109 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 131072)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 
