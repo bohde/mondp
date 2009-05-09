@@ -1,7 +1,12 @@
 #!/usr/bin/python
 import math
 import operator
-import elementtree.ElementTree as ET
+try:
+    import xml.etree.ElementTree as ET
+except:
+    import elementtree.ElementTree as ET
+
+
 
 def parametric(p,h):
     def closure(t):
