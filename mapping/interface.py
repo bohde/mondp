@@ -34,19 +34,23 @@ class SUMOInterface():
     begin = 0
     end = 2000
     routes = None
-    def __init__(self, file_dir="/home/numix/tmp/mondp%f/" % random.random(), sumo="sumo"):
+    def __init__(self, file_dir="/home/numix/tmp/mondp/" , sumo="sumo"):
         """
         file_dir - output directory. For reading and writing.
         sumo - "sumo executable"
         """
+        
         self.id = SUMOInterface.id
         SUMOInterface.id += 1
-        self.file_dir = file_dir
+        self.file_dir = file_dir + str(random.random())
         self.sumo = sumo
         try:
             os.makedirs(self.file_dir)
         except:
             pass
+
+        SUMOInterface.begin = 21600
+        SUMOInterface.end = 25200
 
     def setNodes(self, nodes):
         """
@@ -107,6 +111,7 @@ class SUMOInterface():
         args = ["sumo-jtrrouter", "--flows=%s" % flows,  "--net=%s" % self.getNetFile(),  "--output-file=%s" % self.getRouteFile(),  "-b",  str(SUMOInterface.begin),  "-e" ,  str(SUMOInterface.end)]
         p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         routes = ET.ElementTree(file=self.getRouteFile())
+        print "routes ", SUMOInterface.routes, " ", len(routes.getroot())
         if not(SUMOInterface.routes):
             SUMOInterface.routes = len(routes.getroot())
         else:

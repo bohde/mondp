@@ -1,8 +1,10 @@
 #!/usr/bin/python
 from main.epsilonMOEA import epsilonMOEA
 from mapping.network_mapping import Graph
+from mapping.interface import SUMOInterface
 from main.costChecker import costChecker
-import multiprocessing import Process
+from multiprocessing import Process
+import random
 
 def main():
     #f = open("tapas_out", 'w')
@@ -11,15 +13,18 @@ def main():
     g.cost = c
     g.load()
     g.evaluate()
-    f.write(str(g.fitness))
     print len(g.nodes.nodes.values())
-    ps = [Process(target=run_eval, args=("tapas_out", g, i)) for i in range(5)]
+    random.seed(42)
+    SUMOInterface.begin = 21600
+    SUMOInterface.end = 28800
+    ps = [Process(target=run_eval, args=("tapas_out", g, i, random.random())) for i in range(5)]
     for p in ps:
         p.start()
     for p in ps:
         p.join()
 
-def run_eval(filename, g, i):
+def run_eval(filename, g, i, rand):
+    random.seed(rand)
     f = open(filename + str(i), 'w')
     f.write("Run %s\n" %i)
     e = epsilonMOEA()
