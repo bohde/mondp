@@ -4,7 +4,7 @@ Converts a route to flow defs
 """
 import sys
 try:
-    import xml.eltree.ElementTree as ET
+    import xml.etree.ElementTree as ET
 except:
     import elementtree.ElementTree as ET
 import random

@@ -18,7 +18,7 @@
 """
 
 try:
-    import xml.eltree.ElementTree as ET
+    import xml.etree.ElementTree as ET
 except:
     import elementtree.ElementTree as ET
 import random
@@ -97,14 +97,13 @@ class Graph(Individual):
         s.breakdown()
         s.setNodes(self.nodes)
         s.makeNetwork(self.edges)
-        s.makeRoutes(self.flo_file)
-        tree = s.execute()
-        last_el = tree.getroot()[-1].attrib
+        if(s.makeRoutes(self.flo_file)):
+            times = s.execute()
+        else:
+            print "Not enough routes!"
+            times = [-10000, -10000]
         cost = self.cost.check_costs(self.edges.convert_modifiable()) + self.edges.total_costs()
-        self.fitness = [-1 * float(last_el["meanTravelTime"]), -1 * float(last_el["meanWaitingTime"]), -1*cost]
-        for i,x in enumerate(self.fitness):
-            if x >0:
-                self.fitness[i] = -1000000
+        self.fitness = times + [-1*cost]
         print self.fitness
         s.breakdown()
         del s

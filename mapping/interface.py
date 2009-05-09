@@ -3,7 +3,7 @@ import pipes
 import os
 import subprocess
 try:
-    import xml.eltree.ElementTree as ET
+    import xml.etree.ElementTree as ET
 except:
     import elementtree.ElementTree as ET
 import network_mapping as nm
@@ -31,6 +31,9 @@ def writeNodesOrEdgesToPipe(et, pipe):
 
 class SUMOInterface():
     id = 0
+    begin = 0
+    end = 2000
+    routes = None
     def __init__(self, file_dir="/home/numix/tmp/mondp%f/" % random.random(), sumo="sumo"):
         """
         file_dir - output directory. For reading and writing.
@@ -97,20 +100,33 @@ class SUMOInterface():
         self.network = ET.ElementTree(file=self.getNetFile())
 
     def makeRoutes(self, flows):
+        
         dev_null = open(os.devnull)
         self.openPipeAndWriteXML(self.getNetFile(), self.network)
         sfifo(self.getRouteFile())
-        args = ["sumo-duarouter", "--flows=%s" % flows,  "--net=%s" % self.getNetFile(),  "--output-file=%s" % self.getRouteFile(),  "-b",  "0",  "-e" ,  "2000"]
+        args = ["sumo-jtrrouter", "--flows=%s" % flows,  "--net=%s" % self.getNetFile(),  "--output-file=%s" % self.getRouteFile(),  "-b",  str(SUMOInterface.begin),  "-e" ,  str(SUMOInterface.end)]
         p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         routes = ET.ElementTree(file=self.getRouteFile())
+        if not(SUMOInterface.routes):
+            SUMOInterface.routes = len(routes.getroot())
+        else:
+            if len(routes.getroot()) != SUMOInterface.routes:
+                return False
         self.openPipeAndWriteXML(self.getRouteFile(), routes)
+        return True
 
     def execute(self):
         dev_null = open(os.devnull)
         self.openPipeAndWriteXML(self.getNetFile()+'2', self.network)
         sfifo(self.getOutFile())
         args = [self.sumo, #'-v',
-'-b', '0', '-e', '2000', '-n', self.getNetFile()+'2', '-r', self.getRouteFile(), '--emissions-output', self.getOutFile()]
+'-b', str(SUMOInterface.begin), '-e', str(SUMOInterface.end), '-n', self.getNetFile()+'2', '-r', self.getRouteFile(), '--emissions-output', self.getOutFile()]
         p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         tree = ET.ElementTree(file=self.getOutFile())
-        return tree
+        last_el = tree.getroot()[-1].attrib
+        f = [-1 * float(last_el["meanTravelTime"]), -1 * float(last_el["meanWaitingTime"])]
+        for i,x in enumerate(f):
+            if x >0:
+                f[i] = -1000000
+        return f
+        
