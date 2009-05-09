@@ -29,7 +29,6 @@ from main.epsilonMOEA import Individual
 from threading import Thread
 TEMP='/tmp/' + str(random.random()) + "/"
 print TEMP
-random.seed(42)
 
 class Graph(Individual):
     def __init__(self, nodes_file=None, edges_file=None, flo_file=None):
