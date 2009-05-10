@@ -17,11 +17,12 @@ def main():
     random.seed(42)
     SUMOInterface.begin = 21600
     SUMOInterface.end = 28800
-    ps = [Process(target=run_eval, args=("tapas_out", g, i, random.random())) for i in range(5)]
-    for p in ps:
-        p.start()
-    for p in ps:
-        p.join()
+    for j in xrange(5):
+        ps = [Process(target=run_eval, args=("tapas_out", g, i, random.random())) for i in range(j, j+2)]
+        for p in ps:
+            p.start()
+        for p in ps:
+            p.join()
 
 def run_eval(filename, g, i, rand):
     random.seed(rand)
