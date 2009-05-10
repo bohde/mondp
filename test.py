@@ -11,6 +11,6 @@ if __name__ == "__main__":
     r = nm.Routes("/home/numix/school/ea/cs448/data/tapascologne-0.0.1/routes6-8.rou.xml")
     g = nm.Graph("/home/numix/school/ea/cs448/data/tapascologne-0.0.1/cologne.nod.xml", "/home/numix/school/ea/cs448/data/tapascologne-0.0.1/cologne.edg.xml", "data/rand/rand.flo.xml")
     g.load()
-    g.trim(r, (18641, 19535), (33850, 35412))
+    g.trim(r, (13417, 13757), (31299, 31937))
     r.writexml()
     g.writexml()

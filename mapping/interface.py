@@ -128,6 +128,7 @@ class SUMOInterface():
 '-b', str(SUMOInterface.begin), '-e', str(SUMOInterface.end), '-n', self.getNetFile()+'2', '-r', self.getRouteFile(), '--emissions-output', self.getOutFile()]
         p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         print self.getOutFile()
+        p1.join()
         tree = ET.ElementTree(file=self.getOutFile())
         last_el = tree.getroot()[-1].attrib
         f = [-1 * float(last_el["meanTravelTime"]), -1 * float(last_el["meanWaitingTime"])]

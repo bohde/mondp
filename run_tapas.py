@@ -8,8 +8,8 @@ import random
 
 def main():
     #f = open("tapas_out", 'w')
-    c = costChecker.processCostFile('data/tapas_small/cologne.cost.xml')
-    g = Graph('data/tapas_small/cologne.nod.xml', 'data/tapas_small/cologne.edg.xml', 'data/tapas_small/6-8.flo.xml')
+    c = costChecker.processCostFile('data/tapas_small2/cologne.cost.xml')
+    g = Graph('data/tapas_small2/cologne.nod.xml', 'data/tapas_small2/cologne.edg.xml', 'data/tapas_small2/6-8.flo.xml')
     g.cost = c
     g.load()
     g.evaluate()
