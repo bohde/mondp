@@ -18,7 +18,7 @@
 """
 
 try:
-    import xml.etree.ElementTree as ET
+    import xml.etree.cElementTree as ET
 except:
     import elementtree.ElementTree as ET
 import random
@@ -83,9 +83,9 @@ class Graph(Individual):
     def add_named_edge(self,key, edge):
         self.edges.add_edge(key, edge)
 
-    def writexml(self):
-        ET.ElementTree(self.nodes.toxml()).write(self.nodes_file + "." + "lol")
-        ET.ElementTree(self.edges.toxml()).write(self.edges_file + "." + "lol")
+    def writexml(self, file):
+        ET.ElementTree(self.nodes.toxml()).write(file + ".nod.xml")
+        ET.ElementTree(self.edges.toxml()).write(file + ".edg.xml")
 
     def alter_edges(self):
         self.edges.alter(*self.nodes.get_random_pair())
@@ -388,7 +388,7 @@ class Edges():
 class Route():
     def __init__(self, id, depart, edges):
         self.id = id
-        self.depart = depart
+        self.depart = int(depart)
         self.edges = edges
         #print id, depart, edges
 
@@ -432,7 +432,8 @@ class Routes():
         for route in routes.getroot().getchildren():
             d = route.attrib
             c = route.getchildren()[0]
-            self.routes.append(Route(d["id"], d["depart"], c.text))
+            if int(d["depart"]) < 25200:
+                self.routes.append(Route(d["id"], d["depart"], c.text))
 
     def toxml(self):
         routes = ET.Element("routes")
@@ -441,15 +442,14 @@ class Routes():
         return routes
 
     def trim(self, edges):
+        print len(self.routes)
         new_routes = []
         e = list(edges)
         for route in self.routes:
-            if route.adjust(e):
+            if  route.adjust(e):
                 new_routes.append(route)
-                print "keeping"
-            else:
-               print "dropping"
         self.routes = new_routes
+        print len(self.routes)
 
-    def writexml(self):
-        ET.ElementTree(self.toxml()).write(self.rou_file + "." + "lol")
+    def writexml(self, file):
+        ET.ElementTree(self.toxml()).write(file)

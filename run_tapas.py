@@ -18,7 +18,7 @@ def main():
     SUMOInterface.begin = 21600
     SUMOInterface.end = 28800
     for j in xrange(5):
-        ps = [Process(target=run_eval, args=("tapas_out", g, i, random.random())) for i in range(j, j+2)]
+        ps = [Process(target=run_eval, args=("tapas_out342", g, i, random.random())) for i in range(j, j+2)]
         for p in ps:
             p.start()
         for p in ps:

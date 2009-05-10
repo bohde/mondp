@@ -3,7 +3,7 @@ import pipes
 import os
 import subprocess
 try:
-    import xml.etree.ElementTree as ET
+    import xml.etree.cElementTree as ET
 except:
     import elementtree.ElementTree as ET
 import network_mapping as nm
@@ -124,11 +124,10 @@ class SUMOInterface():
         dev_null = open(os.devnull)
         self.openPipeAndWriteXML(self.getNetFile()+'2', self.network)
         sfifo(self.getOutFile())
-        args = [self.sumo, #'-v',
+        args = [self.sumo, '-v',
 '-b', str(SUMOInterface.begin), '-e', str(SUMOInterface.end), '-n', self.getNetFile()+'2', '-r', self.getRouteFile(), '--emissions-output', self.getOutFile()]
         p1 = subprocess.Popen(args, stdout=dev_null.fileno(), stderr=dev_null.fileno())
         print self.getOutFile()
-        p1.join()
         tree = ET.ElementTree(file=self.getOutFile())
         last_el = tree.getroot()[-1].attrib
         f = [-1 * float(last_el["meanTravelTime"]), -1 * float(last_el["meanWaitingTime"])]
