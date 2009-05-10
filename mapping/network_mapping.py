@@ -115,7 +115,6 @@ class Graph(Individual):
     def trim(self,route, point1, point2):
         self.nodes.trim(point1, point2)
         self.edges.trim()
-        print self.edges.edges.values()
         route.trim(x.id for x in self.edges.edges.values())
         
 
@@ -388,7 +387,7 @@ class Edges():
 class Route():
     def __init__(self, id, depart, edges):
         self.id = id
-        self.depart = int(depart)
+        self.depart = depart
         self.edges = edges
         #print id, depart, edges
 
